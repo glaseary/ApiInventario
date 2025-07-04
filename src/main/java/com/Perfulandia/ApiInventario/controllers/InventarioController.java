@@ -5,6 +5,7 @@ import com.Perfulandia.ApiInventario.dto.ActualizarStockDTO;
 import com.Perfulandia.ApiInventario.services.InventarioService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Link;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -104,5 +105,27 @@ public class InventarioController {
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping("/hateoas/{id}")
+    public InventarioDTO obtenerHATEOAS(@PathVariable Integer id) {
+        InventarioDTO dto = inventarioService.obtenerInventarioPorId(id);
+        String gatewayUrl = "http://localhost:8888/api/proxy/inventario";
+
+        // Link a sí mismo
+        dto.add(Link.of(gatewayUrl + "/hateoas/" + id).withSelfRel());
+
+        // Link para obtener el inventario de la sucursal a la que pertenece
+        if (dto.getSucursal() != null) {
+            dto.add(Link.of(gatewayUrl + "/sucursal/" + dto.getSucursal()).withRel("inventario-sucursal"));
+        }
+
+        // Link para eliminar
+        dto.add(Link.of(gatewayUrl + "/" + id).withRel("eliminar").withType("DELETE"));
+
+        // Link para actualizar el stock (PATCH)
+        dto.add(Link.of(gatewayUrl + "/" + id + "/stock").withRel("actualizar-stock").withType("PATCH"));
+
+        return dto;
     }
 }

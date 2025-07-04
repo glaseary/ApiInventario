@@ -1,10 +1,12 @@
 package com.Perfulandia.ApiInventario.dto;
 
 import lombok.Data;
+import org.springframework.hateoas.RepresentationModel;
+
 import java.time.LocalDate;
 
 @Data
-public class InventarioDTO {
+public class InventarioDTO extends RepresentationModel<InventarioDTO> {
     private Integer idInventario;
     private Integer stockMinimo;
     private Integer stockMaximo;
